@@ -702,18 +702,27 @@ static int pmw3610_report_data(const struct device *dev) {
 
 #ifdef CONFIG_PMW3610_POLLING_RATE_125_SW
     int64_t curr_time = k_uptime_get();
-    if (data->last_poll_time == 0 || curr_time - data->last_poll_time > 128) {
-        data->last_poll_time = curr_time;
-        data->last_x = x;
-        data->last_y = y;
-        return 0;
-    } else {
-        x += data->last_x;
-        y += data->last_y;
-        data->last_poll_time = 0;
-        data->last_x = 0;
-        data->last_y = 0;
+
+    // Drop only a stale, never-flushed residue from a much earlier burst; the
+    // sample we just read below is always folded in, never discarded.
+    if (data->last_smp_time != 0 && curr_time - data->last_smp_time >= PMW3610_REPORT_INTERVAL_MS) {
+        data->dx = 0;
+        data->dy = 0;
     }
+    data->last_smp_time = curr_time;
+
+    data->dx += x;
+    data->dy += y;
+
+    if (curr_time - data->last_rpt_time < PMW3610_REPORT_INTERVAL_MS) {
+        return 0;
+    }
+    data->last_rpt_time = curr_time;
+
+    x = (int16_t)CLAMP(data->dx, INT16_MIN, INT16_MAX);
+    y = (int16_t)CLAMP(data->dy, INT16_MIN, INT16_MAX);
+    data->dx = 0;
+    data->dy = 0;
 #endif
 
     if (x != 0 || y != 0) {

@@ -111,6 +111,12 @@ extern "C" {
 #error "A valid PMW3610 polling rate must be selected"
 #endif
 
+#ifdef CONFIG_PMW3610_POLLING_RATE_125_SW
+/* Hardware still samples at 250 Hz (~4 ms/frame); reports are flushed at this
+ * interval instead, so slow motion accumulates rather than getting dropped. */
+#define PMW3610_REPORT_INTERVAL_MS 8
+#endif
+
 #ifdef CONFIG_PMW3610_FORCE_AWAKE
 #define PMW3610_FORCE_MODE_VALUE 0xF0
 #else
