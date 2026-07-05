@@ -662,6 +662,9 @@ static int pmw3610_report_data(const struct device *dev) {
     int16_t raw_y =
         TOINT16((buf[PMW3610_Y_L_POS] + ((buf[PMW3610_XY_H_POS] & 0x0F) << 8)), 12) / dividor;
 
+    LOG_DBG("raw x/y: %d/%d squal: %d shutter: %d", raw_x, raw_y, buf[PMW3610_SQUAL_POS],
+            ((buf[PMW3610_SHUTTER_H_POS] & 0x01) << 8) + buf[PMW3610_SHUTTER_L_POS]);
+
     if (IS_ENABLED(CONFIG_PMW3610_ORIENTATION_0)) {
         x = -raw_x;
         y = raw_y;
