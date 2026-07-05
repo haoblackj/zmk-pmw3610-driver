@@ -703,14 +703,13 @@ static int pmw3610_report_data(const struct device *dev) {
 #ifdef CONFIG_PMW3610_POLLING_RATE_125_SW
     int64_t curr_time = k_uptime_get();
 
-    // Drop only a stale, never-flushed residue from a much earlier burst; the
-    // sample we just read below is always folded in, never discarded.
-    if (data->last_smp_time != 0 && curr_time - data->last_smp_time >= PMW3610_REPORT_INTERVAL_MS) {
-        data->dx = 0;
-        data->dy = 0;
-    }
-    data->last_smp_time = curr_time;
-
+    // Always fold the new sample in. The flush check below already
+    // guarantees dx/dy never sits unflushed for longer than
+    // PMW3610_REPORT_INTERVAL_MS, so there is no stale residue to guard
+    // against -- an earlier attempt to do so ended up clearing dx/dy
+    // whenever consecutive samples were merely spaced >= REPORT_INTERVAL_MS
+    // apart, which silently dropped real motion for anything slower than
+    // continuous sub-8ms sampling.
     data->dx += x;
     data->dy += y;
 

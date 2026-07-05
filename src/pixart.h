@@ -29,7 +29,6 @@ struct pixart_data {
     int32_t ball_action_delta_y;
 
 #ifdef CONFIG_PMW3610_POLLING_RATE_125_SW
-    int64_t last_smp_time; // last time a motion sample was folded into dx/dy
     int64_t last_rpt_time; // last time dx/dy was flushed as an input report
     int32_t dx;
     int32_t dy;
